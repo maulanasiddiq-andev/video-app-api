@@ -67,7 +67,12 @@ class CommentController extends Controller
      */
     public function update(UpdateCommentRequest $request, Comment $comment)
     {
-        //
+        $validated = $request->validated();
+        $comment->update($validated);
+
+        $base_response = new BaseResponse(true, ['Komentar berhasil diupdate'], $comment->load('user'));
+
+        return response()->json($base_response->toArray());
     }
 
     /**
