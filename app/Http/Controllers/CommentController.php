@@ -1,0 +1,84 @@
+<?php
+
+namespace App\Http\Controllers;
+
+use App\Enums\RecordStatusConstant;
+use App\Models\Comment;
+use App\Http\Requests\StoreCommentRequest;
+use App\Http\Requests\UpdateCommentRequest;
+use App\Http\Resources\BaseResponse;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
+
+class CommentController extends Controller
+{
+    /**
+     * Display a listing of the resource.
+     */
+    public function index(Request $request)
+    {
+        $page_size = $request->input('page_size', 10);
+
+        $comments = Comment::filter($request)->with('user')->paginate($page_size);
+
+        $response = [
+            'succeed' => true,
+            'messages' => [],
+            'data' => [
+                'items' => $comments->items(),
+                'total_item' => $comments->total(),
+                'current_page' => $comments->currentPage(),
+                'page_size' => $comments->perPage(),
+                'total_pages' => $comments->lastPage(),
+                'has_previous_page' => $comments->currentPage() > 1,
+                'has_next_page' => $comments->currentPage() < $comments->lastPage()
+            ]
+        ];
+
+        return response()->json($response);
+    }
+
+    /**
+     * Store a newly created resource in storage.
+     */
+    public function store(StoreCommentRequest $request)
+    {
+        $user = Auth::guard();
+        $validated = $request->validated();
+        $validated["user_id"] = $user->id();
+
+        $comment = Comment::create($validated);
+
+        $base_response = new BaseResponse(true, ['Komentar berhasil ditambahkan'], $comment->load('user'));
+
+        return response()->json($base_response->toArray());
+    }
+
+    /**
+     * Display the specified resource.
+     */
+    public function show(Comment $comment)
+    {
+        //
+    }
+
+    /**
+     * Update the specified resource in storage.
+     */
+    public function update(UpdateCommentRequest $request, Comment $comment)
+    {
+        //
+    }
+
+    /**
+     * Remove the specified resource from storage.
+     */
+    public function destroy(Comment $comment)
+    {
+        $comment->update(['record_status' => RecordStatusConstant::deleted]);
+
+        $base_response = new BaseResponse(true, ['Komentar berhasil dihapus'], null);
+
+        return response()->json($base_response->toArray());
+    }
+}

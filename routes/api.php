@@ -1,0 +1,49 @@
+<?php
+
+use App\Http\Controllers\AuthController;
+use App\Http\Controllers\CommentController;
+use App\Http\Controllers\HistoryController;
+use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\UserController;
+use App\Http\Controllers\VideoController;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Route;
+
+Route::get('/users', function (Request $request) {
+    return $request->user();
+})->middleware('auth:sanctum');
+
+Route::post('/login', [AuthController::class, 'login']);
+Route::post('/register', [AuthController::class, 'register']);
+Route::post('/verify-account', [AuthController::class, 'verifyAccount']);
+Route::post('/resend-otp', [AuthController::class, 'resendOtp']);
+
+Route::middleware('auth:sanctum')->group(function() {
+    Route::apiResource('/video', VideoController::class);
+    Route::apiResource('/comment', CommentController::class);
+    Route::apiResource('/history', HistoryController::class);
+
+    Route::prefix('/profile')->group(function() {
+        Route::post('/edit-profile-image', [ProfileController::class, 'editProfileImage']);
+        Route::get('/get-self', [ProfileController::class, 'getSelf']);
+    });
+});
+
+Route::apiResource('/user', UserController::class);
+
+Route::get('/google', function() {
+    $client = new Google\Client();
+    $client->setClientId(env('GOOGLE_DRIVE_CLIENT_ID'));
+    $client->setClientSecret(env('GOOGLE_DRIVE_CLIENT_SECRET'));
+    $client->setRedirectUri('http://localhost:8000/get-google-token');
+    $client->addScope(Google\Service\Drive::DRIVE);
+    $client->setAccessType('offline');
+    $client->setPrompt('consent');
+
+    if (!request()->has('code')) {
+        return redirect()->away($client->createAuthUrl());
+    } else {
+        $client->authenticate(request('code'));
+        return $client->getAccessToken(); // contains 'refresh_token'
+    }
+});
