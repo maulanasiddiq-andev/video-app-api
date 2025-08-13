@@ -37,6 +37,8 @@ class History extends Model
     {
         $query->where('record_status', 'active');
 
+        $query->orderBy('created_at', 'desc');
+
         return $query;
     }
 
