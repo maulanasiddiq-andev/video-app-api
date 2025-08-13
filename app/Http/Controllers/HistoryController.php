@@ -2,9 +2,11 @@
 
 namespace App\Http\Controllers;
 
+use App\Enums\RecordStatusConstant;
 use App\Models\History;
 use App\Http\Requests\StoreHistoryRequest;
 use App\Http\Requests\UpdateHistoryRequest;
+use App\Http\Resources\BaseResponse;
 use Illuminate\Http\Request;
 
 class HistoryController extends Controller
@@ -17,6 +19,7 @@ class HistoryController extends Controller
         $page_size = $request->input('page_size', 10);
 
         $histories = History::filter($request)
+                    ->with('video.user')
                     ->where('user_id', $request->user()->id)
                     ->paginate($page_size);
 
@@ -103,6 +106,11 @@ class HistoryController extends Controller
      */
     public function destroy(History $history)
     {
-        //
+        $history->record_status = RecordStatusConstant::deleted;
+        $history->save();
+
+        $base_response = new BaseResponse(true, ['Riwayat berhasil dihapus'], null);
+
+        return response()->json($base_response->toArray());
     }
 }
