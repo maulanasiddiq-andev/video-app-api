@@ -26,6 +26,13 @@ Route::middleware('auth:sanctum')->group(function() {
     Route::prefix('/profile')->group(function() {
         Route::post('/edit-profile-image', [ProfileController::class, 'editProfileImage']);
         Route::get('/get-self', [ProfileController::class, 'getSelf']);
+        Route::get('/get-my-videos', [ProfileController::class, 'getMyVideos']);
+        Route::get('/get-my-comments', [ProfileController::class, 'getMyComments']);
+    });
+
+    Route::prefix('/user')->group(function() {
+        Route::get('/{user}/get-videos', [UserController::class, 'getUserVideos']);
+        Route::get('/{user}/get-comments', [UserController::class, 'getUserComments']);
     });
 });
 

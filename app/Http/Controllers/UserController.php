@@ -2,7 +2,11 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Resources\BaseResponse;
+use App\Http\Resources\SearchResponse;
+use App\Models\Comment;
 use App\Models\User;
+use App\Models\Video;
 use Illuminate\Http\Request;
 
 class UserController extends Controller
@@ -79,5 +83,29 @@ class UserController extends Controller
     public function destroy(string $id)
     {
         //
+    }
+
+    public function getUserVideos(Request $request, User $user)
+    {
+        $page_size = $request->input('page_size', 10);
+
+        $videos = Video::with('user')->where('user_id', $user->id)->filter($request)->paginate($page_size);
+
+        $search_response = new SearchResponse($videos);
+        $base_response = new BaseResponse(true, [], $search_response->toArray());
+
+        return response()->json($base_response->toArray());
+    }
+
+    public function getUserComments(Request $request, User $user)
+    {
+        $page_size = $request->input('page_size', 10);
+
+        $comments = Comment::with(['user', 'video'])->where('user_id', $user->id)->filter($request)->paginate($page_size);
+
+        $search_response = new SearchResponse($comments);
+        $base_response = new BaseResponse(true, [], $search_response->toArray());
+
+        return response()->json($base_response->toArray());
     }
 }
