@@ -12,13 +12,13 @@ class BaseResponse
      *
      * @return array<string, mixed>
      */
-    public bool $succeedd;
+    public bool $succeed;
     public array $messages;
     public mixed $data;
 
     public function __construct($succeed, $messages, $data)
     {
-        $this->succeedd = $succeed;
+        $this->succeed = $succeed;
         $this->messages = $messages;
         $this->data = $data;
     }
@@ -26,7 +26,7 @@ class BaseResponse
     public function toArray(): array
     {
         return [
-            'succeed' => $this->succeedd,
+            'succeed' => $this->succeed,
             'messages' => $this->messages,
             'data' => $this->data
         ];

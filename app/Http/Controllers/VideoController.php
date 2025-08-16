@@ -86,7 +86,7 @@ class VideoController extends Controller
         $resource = $existing_video->toResource();
         $base_response = new BaseResponse(true, [], $resource);
 
-        return response()->json($base_response);
+        return response()->json($base_response->toArray());
     }
 
     /**
@@ -127,6 +127,6 @@ class VideoController extends Controller
         $video->update(['record_status' => RecordStatusConstant::deleted]);
         $base_response = new BaseResponse(true, ['Video berhasil dihapus'], null);
 
-        return $base_response;
+        return response()->json($base_response->toArray());
     }
 }

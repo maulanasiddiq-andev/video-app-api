@@ -4,7 +4,10 @@ namespace App\Http\Controllers;
 
 use App\Http\Requests\UpdateProfileImageRequest;
 use App\Http\Resources\BaseResponse;
+use App\Http\Resources\CommentResource;
 use App\Http\Resources\SearchResponse;
+use App\Http\Resources\UserResource;
+use App\Http\Resources\VideoResource;
 use App\Models\Comment;
 use App\Models\Video;
 use Illuminate\Http\Request;
@@ -30,24 +33,16 @@ class ProfileController extends Controller
 
         $user->update();
 
-        $response = [
-            "succeed" => true,
-            "messages" => ['Gambar profil berhasil diubah'],
-            "data" => $request->user()
-        ];
+        $base_response = new BaseResponse(true, ['Gambar profil berhasil diupdate'], new UserResource($request->user()));
 
-        return response()->json($response);
+        return response()->json($base_response->toArray());
     }
 
     public function getSelf(Request $request)
     {
-        $response = [
-            "succeed" => true,
-            "messages" => [],
-            "data" => $request->user()
-        ];
+        $base_response = new BaseResponse(true, [], new UserResource($request->user()));
 
-        return $response;
+        return response()->json($base_response->toArray());
     }
 
     public function getMyVideos(Request $request)
@@ -60,7 +55,8 @@ class ProfileController extends Controller
                         ->filter($request)
                         ->paginate($page_size);
 
-        $search_response = new SearchResponse($videos);
+        $collection = VideoResource::collection($videos)->response()->getData(true);
+        $search_response = new SearchResponse($collection);
         $base_response = new BaseResponse(true, [], $search_response->toArray());
 
         return response()->json($base_response->toArray());
@@ -76,7 +72,8 @@ class ProfileController extends Controller
                             ->filter($request)
                             ->paginate($page_size);
 
-        $search_response = new SearchResponse($comments);
+        $collection = CommentResource::collection($comments)->response()->getData(true);
+        $search_response = new SearchResponse($collection);
         $base_response = new BaseResponse(true, [], $search_response->toArray());
 
         return response()->json($base_response->toArray());
