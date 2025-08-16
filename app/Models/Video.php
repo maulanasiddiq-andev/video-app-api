@@ -65,16 +65,25 @@ class Video extends Model
         return $this->belongsTo(User::class);
     }
 
+    // for getting the latest comment
+    public function comment()
+    {
+        return $this->hasOne(Comment::class);
+    }
+
+    // for getting the number of comments
     public function comments()
     {
         return $this->hasMany(Comment::class);
     }
 
+    // for getting the last position watched by viewer
     public function history()
     {
         return $this->hasOne(History::class);
     }
 
+    // for getting the number of views
     public function histories()
     {
         return $this->hasMany(History::class);
