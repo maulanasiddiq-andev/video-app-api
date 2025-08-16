@@ -2,10 +2,6 @@
 
 namespace App\Http\Resources;
 
-use Illuminate\Contracts\Pagination\LengthAwarePaginator;
-// use Illuminate\Http\Request;
-// use Illuminate\Http\Resources\Json\JsonResource;
-
 class SearchResponse
 {
     /**
@@ -13,7 +9,7 @@ class SearchResponse
      *
      * @return array<string, mixed>
      */
-    public array $items;
+    public mixed $items;
     public int $total_item;
     public int $current_page;
     public int $page_size;
@@ -21,27 +17,29 @@ class SearchResponse
     public bool $has_next_page;
     public bool $has_previous_page;
 
-    public function __construct(LengthAwarePaginator $paginator)
+    public function __construct(mixed $collection)
     {
-        $this->items = $paginator->items();
-        $this->total_item = $paginator->total();
-        $this->current_page = $paginator->currentPage();
-        $this->page_size = $paginator->perPage();
-        $this->total_pages = $paginator->lastPage();
-        $this->has_next_page = $paginator->currentPage() < $paginator->lastPage();
-        $this->has_previous_page = $paginator->currentPage() > 1;
+        $meta = $collection["meta"];
+
+        $this->items = $collection["data"];
+        $this->total_item = $meta["total"];
+        $this->current_page = $meta["current_page"];
+        $this->page_size = $meta["per_page"];
+        $this->total_pages = $meta["last_page"];
+        $this->has_next_page = $this->current_page < $this->total_pages;
+        $this->has_previous_page = $this->current_page > 1;
     }
 
     public function toArray(): array
     {
         return [
             'items' => $this->items,
-            'total_item' => $this->total_item,
-            'current_page' => $this->current_page,
-            'page_size' => $this->page_size,
-            'total_pages' => $this->total_pages,
-            'has_next_page' => $this->has_next_page,
-            'has_previous_page' => $this->has_previous_page,
+            'totalItem' => $this->total_item,
+            'currentPage' => $this->current_page,
+            'pageSize' => $this->page_size,
+            'totalPages' => $this->total_pages,
+            'hasNextPage' => $this->has_next_page,
+            'hasPreviousPage' => $this->has_previous_page,
         ];
     }
 }
