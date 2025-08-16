@@ -7,7 +7,9 @@ use App\Models\Video;
 use App\Http\Requests\StoreVideoRequest;
 use App\Http\Requests\UpdateVideoRequest;
 use App\Http\Resources\BaseResponse;
+use App\Http\Resources\CommentResource;
 use App\Http\Resources\SearchResponse;
+use App\Http\Resources\VideoResource;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
@@ -32,7 +34,8 @@ class VideoController extends Controller
             ->filter($request)
             ->paginate($page_size);
 
-        $search_response = new SearchResponse($videos);
+        $collection = VideoResource::collection($videos)->response()->getData(true);
+        $search_response = new SearchResponse($collection);
         $base_response = new BaseResponse(true, [], $search_response->toArray());
 
         return response()->json($base_response->toArray());
@@ -71,28 +74,19 @@ class VideoController extends Controller
 
         $existing_video = $video
             ->load([
-                    'history' => fn($query) => $query->orderBy('created_at', 'desc')->where('user_id', $userId),
                     'user', 
-                    'comments' => fn($query) => $query->orderBy('created_at', 'desc')
-                                                ->where('record_status', RecordStatusConstant::active)
-                                                ->limit(1), // only takes one comment
+                    'history' => fn($query) => $query->orderBy('created_at', 'desc')
+                                                ->where('user_id', $userId)
+                                                ->where('record_status', RecordStatusConstant::active),
+                    'comment' => fn($query) => $query->orderBy('created_at', 'desc')
+                                                ->where('record_status', RecordStatusConstant::active),
                 ])
             ->loadCount(['comments', 'histories']);
 
-        $first_comment = $video->comments->first();
+        $resource = $existing_video->toResource();
+        $base_response = new BaseResponse(true, [], $resource);
 
-        // load the user of the first comment
-        if ($first_comment) {
-            $first_comment->load('user');
-        }
-
-        $response = [
-            'succeed' => true,
-            'messages' => [],
-            'data' => $existing_video
-        ];
-
-        return response()->json($response);
+        return response()->json($base_response);
     }
 
     /**
@@ -117,13 +111,9 @@ class VideoController extends Controller
         $validated["duration"] = $request->input('duration');
         $video->update($validated);
 
-        $response = [
-            'succeed' => true,
-            'messages' => ['Video berhasil diupdate'],
-            'data' => null
-        ];
+        $base_response = new BaseResponse(true, ['Video berhasil diupdate'], null);
 
-        return response()->json($response);
+        return response()->json($base_response->toArray());
     }
 
     /**
@@ -135,13 +125,8 @@ class VideoController extends Controller
         // $video->delete();
 
         $video->update(['record_status' => RecordStatusConstant::deleted]);
+        $base_response = new BaseResponse(true, ['Video berhasil dihapus'], null);
 
-        $response = [
-            'succeed' => true,
-            'messages' => ['Video berhasil dihapus'],
-            'data' => null
-        ];
-
-        return $response;
+        return $base_response;
     }
 }

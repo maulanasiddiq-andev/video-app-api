@@ -3,7 +3,10 @@
 namespace App\Http\Controllers;
 
 use App\Http\Resources\BaseResponse;
+use App\Http\Resources\CommentResource;
 use App\Http\Resources\SearchResponse;
+use App\Http\Resources\UserResource;
+use App\Http\Resources\VideoResource;
 use App\Models\Comment;
 use App\Models\User;
 use App\Models\Video;
@@ -20,21 +23,11 @@ class UserController extends Controller
 
         $users = User::withCount(['videos'])->paginate($page_size);
 
-        $response = [
-            "succeed" => true,
-            "messages" => [],
-            "data" => [
-                "items" => $users->items(),
-                'total_item' => $users->total(),
-                'current_page' => $users->currentPage(),
-                'page_size' => $users->perPage(),
-                'total_pages' => $users->lastPage(),
-                'has_previous_page' => $users->currentPage() > 1,
-                'has_next_page' => $users->currentPage() < $users->lastPage()
-            ]
-        ];
+        $collection = UserResource::collection($users)->response()->getData(true);
+        $search_response = new SearchResponse($collection);
+        $base_response = new BaseResponse(true, [], $search_response->toArray());
 
-        return response()->json($response);
+        return response()->json($base_response->toArray());
     }
 
     /**
@@ -58,7 +51,9 @@ class UserController extends Controller
      */
     public function show(User $user)
     {
-        return $user->load('videos')->loadCount('videos');
+        $resource = new UserResource($user->loadCount('videos'));
+        $base_response = new BaseResponse(true, [], $resource);
+        return response()->json($base_response->toArray());
     }
 
     /**
@@ -91,7 +86,8 @@ class UserController extends Controller
 
         $videos = Video::with('user')->where('user_id', $user->id)->filter($request)->paginate($page_size);
 
-        $search_response = new SearchResponse($videos);
+        $collection = VideoResource::collection($videos)->response()->getData(true);
+        $search_response = new SearchResponse($collection);
         $base_response = new BaseResponse(true, [], $search_response->toArray());
 
         return response()->json($base_response->toArray());
@@ -103,7 +99,8 @@ class UserController extends Controller
 
         $comments = Comment::with(['user', 'video'])->where('user_id', $user->id)->filter($request)->paginate($page_size);
 
-        $search_response = new SearchResponse($comments);
+        $collection = CommentResource::collection($comments)->response()->getData(true);
+        $search_response = new SearchResponse($collection);
         $base_response = new BaseResponse(true, [], $search_response->toArray());
 
         return response()->json($base_response->toArray());

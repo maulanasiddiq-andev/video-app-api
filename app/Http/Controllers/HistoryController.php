@@ -7,6 +7,8 @@ use App\Models\History;
 use App\Http\Requests\StoreHistoryRequest;
 use App\Http\Requests\UpdateHistoryRequest;
 use App\Http\Resources\BaseResponse;
+use App\Http\Resources\HistoryResource;
+use App\Http\Resources\SearchResponse;
 use Illuminate\Http\Request;
 
 class HistoryController extends Controller
@@ -23,21 +25,11 @@ class HistoryController extends Controller
                     ->where('user_id', $request->user()->id)
                     ->paginate($page_size);
 
-        $response = [
-            "succeed" => true,
-            "messages" => [],
-            "data" => [
-                'items' => $histories->items(),
-                'total_item' => $histories->total(),
-                'current_page' => $histories->currentPage(),
-                'page_size' => $histories->perPage(),
-                'total_pages' => $histories->lastPage(),
-                'has_previous_page' => $histories->currentPage() > 1,
-                'has_next_page' => $histories->currentPage() < $histories->lastPage()
-            ]
-        ];
+        $collection = HistoryResource::collection($histories)->response()->getData(true);
+        $search_response = new SearchResponse($collection);
+        $base_response = new BaseResponse(true, [], $search_response->toArray());
 
-        return response()->json($response);
+        return response()->json($base_response->toArray());
     }
 
     /**
@@ -58,13 +50,9 @@ class HistoryController extends Controller
 
         History::create($validated);
 
-        $response = [
-            'succeed' => true,
-            'messages' => [],
-            'data' => null
-        ];
+        $base_response = new BaseResponse(true, ['Riwayat berhasil ditambahkan'], null);
 
-        return response()->json($response);
+        return response()->json($base_response->toArray());
     }
 
     /**
@@ -88,17 +76,7 @@ class HistoryController extends Controller
      */
     public function update(UpdateHistoryRequest $request, History $history)
     {
-        $validated = $request->validated();
-
-        $history->update($validated);
-
-        $response = [
-            'succeed' => true,
-            'messages' => [],
-            'data' => null
-        ];
-
-        return $response;
+        //
     }
 
     /**

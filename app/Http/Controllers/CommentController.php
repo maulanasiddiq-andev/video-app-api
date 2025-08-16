@@ -7,6 +7,8 @@ use App\Models\Comment;
 use App\Http\Requests\StoreCommentRequest;
 use App\Http\Requests\UpdateCommentRequest;
 use App\Http\Resources\BaseResponse;
+use App\Http\Resources\CommentResource;
+use App\Http\Resources\SearchResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
@@ -21,21 +23,11 @@ class CommentController extends Controller
 
         $comments = Comment::filter($request)->with('user')->paginate($page_size);
 
-        $response = [
-            'succeed' => true,
-            'messages' => [],
-            'data' => [
-                'items' => $comments->items(),
-                'total_item' => $comments->total(),
-                'current_page' => $comments->currentPage(),
-                'page_size' => $comments->perPage(),
-                'total_pages' => $comments->lastPage(),
-                'has_previous_page' => $comments->currentPage() > 1,
-                'has_next_page' => $comments->currentPage() < $comments->lastPage()
-            ]
-        ];
+        $collection = CommentResource::collection($comments)->response()->getData(true);
+        $search_response = new SearchResponse($collection);
+        $base_response = new BaseResponse(true, [], $search_response->toArray());
 
-        return response()->json($response);
+        return response()->json($base_response->toArray());
     }
 
     /**

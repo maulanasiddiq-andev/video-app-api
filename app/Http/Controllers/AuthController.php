@@ -4,6 +4,8 @@ namespace App\Http\Controllers;
 
 use App\Enums\RecordStatusConstant;
 use App\Http\Resources\BaseResponse;
+use App\Http\Resources\TokenResource;
+use App\Http\Resources\UserResource;
 use App\Mail\ConfirmationMail;
 use App\Models\Otp;
 use App\Models\User;
@@ -30,16 +32,13 @@ class AuthController extends Controller
             ]);
         }
 
-        $response = [
-            "succeed" => true,
-            "messages" => [],
-            "data" => [
-                "token" => $user->createToken('api-token')->plainTextToken,
-                "user" => $user
-            ]
+        $resource = [
+            'token' => $user->createToken('api-token')->plainTextToken,
+            'user' => new UserResource($user)
         ];
+        $base_response = new BaseResponse(true, [], $resource);
 
-        return response()->json($response);
+        return response()->json($base_response->toArray());
     }
 
     public function register(Request $request)
