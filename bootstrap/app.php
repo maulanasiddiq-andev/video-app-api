@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Resources\BaseResponse;
 use Illuminate\Auth\AuthenticationException;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
@@ -19,27 +20,18 @@ return Application::configure(basePath: dirname(__DIR__))
     })
     ->withExceptions(function (Exceptions $exceptions): void {
         $exceptions->render(function(AuthenticationException $e) {
-            return response()->json([
-                'succeed' => false,
-                'messages' => ['Anda tidak memiliki akses menuju halaman ini'],
-                'data' => null
-            ]);
+            $base_response = new BaseResponse(false, ['Anda tidak memiliki akses menuju halaman ini'], null);
+            return response()->json($base_response->toArray(), 401);
         });
 
         $exceptions->render(function (ValidationException $e) {
-            return response()->json([
-                'succeed' => false,
-                'messages' => [$e->getMessage()],
-                'data' => null
-            ]);
+            $base_response = new BaseResponse(false, [$e->getMessage()], null);
+            return response()->json($base_response->toArray(), 422);
         });
 
         $exceptions->render(function (NotFoundHttpException $e) {
-            return response()->json([
-                'succeed' => false,
-                'messages' => ['Data tidak ditemukan'],
-                'data' => null
-            ]);
+            $base_response = new BaseResponse(false, ['Data tidak ditemukan'], null);
+            return response()->json($base_response->toArray(), 404);
         });
 
         // $exceptions->render(function (Throwable $e) {
