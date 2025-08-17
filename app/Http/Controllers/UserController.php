@@ -19,9 +19,9 @@ class UserController extends Controller
      */
     public function index(Request $request)
     {
-        $page_size = $request->input('page_size', 10);
+        $page_size = $request->input('pageSize', 10);
 
-        $users = User::withCount(['videos'])->paginate($page_size);
+        $users = User::record($request)->withCount(['videos'])->paginate($page_size);
 
         $collection = UserResource::collection($users)->response()->getData(true);
         $search_response = new SearchResponse($collection);
@@ -82,9 +82,13 @@ class UserController extends Controller
 
     public function getUserVideos(Request $request, User $user)
     {
-        $page_size = $request->input('page_size', 10);
+        $page_size = $request->input('pageSize', 10);
 
-        $videos = Video::with('user')->where('user_id', $user->id)->filter($request)->paginate($page_size);
+        $videos = Video::with('user')
+                    ->where('user_id', $user->id)
+                    ->filter($request)
+                    ->record($request)
+                    ->paginate($page_size);
 
         $collection = VideoResource::collection($videos)->response()->getData(true);
         $search_response = new SearchResponse($collection);
@@ -95,9 +99,13 @@ class UserController extends Controller
 
     public function getUserComments(Request $request, User $user)
     {
-        $page_size = $request->input('page_size', 10);
+        $page_size = $request->input('pageSize', 10);
 
-        $comments = Comment::with(['user', 'video'])->where('user_id', $user->id)->filter($request)->paginate($page_size);
+        $comments = Comment::with(['user', 'video'])
+                    ->where('user_id', $user->id)
+                    ->filter($request)
+                    ->record($request)
+                    ->paginate($page_size);
 
         $collection = CommentResource::collection($comments)->response()->getData(true);
         $search_response = new SearchResponse($collection);

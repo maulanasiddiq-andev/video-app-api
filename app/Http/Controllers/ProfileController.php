@@ -47,7 +47,7 @@ class ProfileController extends Controller
 
     public function getMyVideos(Request $request)
     {
-        $page_size = $request->input('page_size', 10);
+        $page_size = $request->input('pageSize', 10);
 
         $videos = Video::with('user')
                         ->where('user_id', $request->user()->id)
@@ -64,7 +64,7 @@ class ProfileController extends Controller
 
     public function getMyComments(Request $request)
     {
-        $page_size = $request->input('page_size', 10);
+        $page_size = $request->input('pageSize', 10);
 
         $comments = Comment::with(['user', 'video.user'])
                             ->where('user_id', $request->user()->id)

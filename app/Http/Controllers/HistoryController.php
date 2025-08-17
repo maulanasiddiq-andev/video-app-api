@@ -10,6 +10,7 @@ use App\Http\Resources\BaseResponse;
 use App\Http\Resources\HistoryResource;
 use App\Http\Resources\SearchResponse;
 use Illuminate\Http\Request;
+use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 
 class HistoryController extends Controller
 {
@@ -18,9 +19,10 @@ class HistoryController extends Controller
      */
     public function index(Request $request)
     {
-        $page_size = $request->input('page_size', 10);
+        $page_size = $request->input('pageSize', 10);
 
-        $histories = History::filter($request)
+        $histories = History::record($request)
+                    ->filter($request)
                     ->with('video.user')
                     ->where('user_id', $request->user()->id)
                     ->paginate($page_size);
@@ -60,7 +62,16 @@ class HistoryController extends Controller
      */
     public function show(History $history)
     {
-        //
+        if ($history->record_status == RecordStatusConstant::deleted) {
+            throw NotFoundHttpException::class;
+        }  
+
+        $existing_history = $history->load(['user', 'video.user']);
+
+        $resource = $existing_history->toResource();
+        $base_response = new BaseResponse(true, [], $resource);
+
+        return response()->json($base_response->toArray());
     }
 
     /**
@@ -76,7 +87,16 @@ class HistoryController extends Controller
      */
     public function update(UpdateHistoryRequest $request, History $history)
     {
-        //
+        if ($history->record_status == RecordStatusConstant::deleted) {
+            throw NotFoundHttpException::class;
+        }  
+
+        $validated = $request->validated();
+        $history->update($validated);
+
+        $base_response = new BaseResponse(true, ['Komentar berhasil diupdate'], $history->load('user'));
+
+        return response()->json($base_response->toArray());
     }
 
     /**
@@ -84,9 +104,12 @@ class HistoryController extends Controller
      */
     public function destroy(History $history)
     {
+        if ($history->record_status == RecordStatusConstant::deleted) {
+            throw NotFoundHttpException::class;
+        }
+
         $history->record_status = RecordStatusConstant::deleted;
         $history->save();
-
         $base_response = new BaseResponse(true, ['Riwayat berhasil dihapus'], null);
 
         return response()->json($base_response->toArray());

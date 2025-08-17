@@ -11,6 +11,7 @@ use App\Http\Resources\CommentResource;
 use App\Http\Resources\SearchResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 
 class CommentController extends Controller
 {
@@ -19,9 +20,9 @@ class CommentController extends Controller
      */
     public function index(Request $request)
     {
-        $page_size = $request->input('page_size', 10);
+        $page_size = $request->input('pageSize', 10);
 
-        $comments = Comment::filter($request)->with('user')->paginate($page_size);
+        $comments = Comment::record($request)->filter($request)->with('user')->paginate($page_size);
 
         $collection = CommentResource::collection($comments)->response()->getData(true);
         $search_response = new SearchResponse($collection);
@@ -51,7 +52,16 @@ class CommentController extends Controller
      */
     public function show(Comment $comment)
     {
-        //
+        if ($comment->record_status == RecordStatusConstant::deleted) {
+            throw NotFoundHttpException::class;
+        }  
+
+        $existing_comment = $comment->load('user');
+
+        $resource = $existing_comment->toResource();
+        $base_response = new BaseResponse(true, [], $resource);
+
+        return response()->json($base_response->toArray());
     }
 
     /**
@@ -59,6 +69,10 @@ class CommentController extends Controller
      */
     public function update(UpdateCommentRequest $request, Comment $comment)
     {
+        if ($comment->record_status == RecordStatusConstant::deleted) {
+            throw NotFoundHttpException::class;
+        }  
+
         $validated = $request->validated();
         $comment->update($validated);
 
@@ -72,8 +86,11 @@ class CommentController extends Controller
      */
     public function destroy(Comment $comment)
     {
-        $comment->update(['record_status' => RecordStatusConstant::deleted]);
+        if ($comment->record_status == RecordStatusConstant::deleted) {
+            throw NotFoundHttpException::class;
+        }  
 
+        $comment->update(['record_status' => RecordStatusConstant::deleted]);
         $base_response = new BaseResponse(true, ['Komentar berhasil dihapus'], null);
 
         return response()->json($base_response->toArray());

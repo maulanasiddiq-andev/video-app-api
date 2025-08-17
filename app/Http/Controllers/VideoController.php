@@ -7,12 +7,12 @@ use App\Models\Video;
 use App\Http\Requests\StoreVideoRequest;
 use App\Http\Requests\UpdateVideoRequest;
 use App\Http\Resources\BaseResponse;
-use App\Http\Resources\CommentResource;
 use App\Http\Resources\SearchResponse;
 use App\Http\Resources\VideoResource;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
+use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 
 class VideoController extends Controller
 {
@@ -21,7 +21,7 @@ class VideoController extends Controller
      */
     public function index(Request $request)
     {
-        $page_size = $request->input('page_size', 10);
+        $page_size = $request->input('pageSize', 10);
         $guard = Auth::guard(); 
         $userId = $guard->id(); 
 
@@ -31,6 +31,7 @@ class VideoController extends Controller
                     'history' => fn($query) => $query->orderBy('created_at', 'desc')->where('user_id', $userId),
                 ])
             ->withCount(['comments', 'histories'])
+            ->record($request)
             ->filter($request)
             ->paginate($page_size);
 
@@ -69,6 +70,10 @@ class VideoController extends Controller
      */
     public function show(Video $video)
     {
+        if ($video->record_status == RecordStatusConstant::deleted) {
+            throw NotFoundHttpException::class;
+        }
+
         $guard = Auth::guard(); 
         $userId = $guard->id();  
 
@@ -94,6 +99,10 @@ class VideoController extends Controller
      */
     public function update(UpdateVideoRequest $request, Video $video)
     {
+        if ($video->record_status == RecordStatusConstant::deleted) {
+            throw NotFoundHttpException::class;
+        }
+
         $validated = $request->validated();
 
         if ($request->file('image')) {
@@ -123,6 +132,9 @@ class VideoController extends Controller
     {
         // normally delete data
         // $video->delete();
+        if ($video->record_status == RecordStatusConstant::deleted) {
+            throw NotFoundHttpException::class;
+        }
 
         $video->update(['record_status' => RecordStatusConstant::deleted]);
         $base_response = new BaseResponse(true, ['Video berhasil dihapus'], null);
