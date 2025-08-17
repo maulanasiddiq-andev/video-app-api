@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Enums\RecordStatusConstant;
 use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
@@ -26,6 +27,13 @@ class User extends Authenticatable implements MustVerifyEmail
                 $model->{$model->getKeyName()} = (string) Str::uuid();
             }
         });
+    }
+
+    public function scopeRecord($query, $filters)
+    {
+        $query->where('record_status', RecordStatusConstant::active);
+
+        return $query;
     }
 
     /**

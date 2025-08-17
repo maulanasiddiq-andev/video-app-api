@@ -37,10 +37,15 @@ class Video extends Model
         });
     }
 
-    public function scopeFilter($query, $filters)
+    public function scopeRecord($query, $filters)
     {
         $query->where('record_status', RecordStatusConstant::active);
 
+        return $query;
+    }
+
+    public function scopeFilter($query, $filters)
+    {
         $query->when(
             $filters->filled('search'),
             fn($q) => $q->where('title', 'like', '%' . $filters->search . '%')

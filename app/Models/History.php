@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Enums\RecordStatusConstant;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Str;
@@ -33,10 +34,15 @@ class History extends Model
         });
     }
 
+    public function scopeRecord($query, $filter)
+    {
+        $query->where('record_status', RecordStatusConstant::active);
+
+        return $query;
+    }
+
     public function scopeFilter($query, $filters)
     {
-        $query->where('record_status', 'active');
-
         $query->orderBy('created_at', 'desc');
 
         return $query;

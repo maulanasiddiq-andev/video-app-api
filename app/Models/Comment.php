@@ -33,10 +33,15 @@ class Comment extends Model
         });
     }
 
-    public function scopeFilter($query, $filters)
+    public function scopeRecord($query, $filter)
     {
         $query->where('record_status', RecordStatusConstant::active);
-        
+
+        return $query;
+    }
+
+    public function scopeFilter($query, $filters)
+    {
         $query->when($filters->filled('video_id'), fn($q) => $q->where('video_id', $filters->video_id));
 
         $query->orderBy('created_at', 'desc');
