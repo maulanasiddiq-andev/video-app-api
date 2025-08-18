@@ -22,7 +22,7 @@ class HistoryResource extends JsonResource
             'position' => $this->position,
             'recordStatus' => $this->record_status,
             'createdAt' => $this->created_at,
-            'video' => new VideoResource($this->video),
+            'video' => new VideoResource($this->whenLoaded('video')),
         ];
     }
 }

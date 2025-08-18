@@ -22,8 +22,8 @@ class CommentResource extends JsonResource
             'recordStatus' => $this->record_status,
             'createdAt' => $this->created_at,
             'updatedAt' => $this->updated_at,
-            'user' => new UserResource($this->user),
-            'video' => new VideoResource($this->video)
+            'user' => new UserResource($this->whenLoaded('user')),
+            'video' => new VideoResource($this->whenLoaded('video'))
         ];
     }
 }
