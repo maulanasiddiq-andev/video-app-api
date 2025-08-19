@@ -3,6 +3,7 @@
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\CommentController;
 use App\Http\Controllers\HistoryController;
+use App\Http\Controllers\LikeController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\VideoController;
@@ -22,6 +23,7 @@ Route::middleware('auth:sanctum')->group(function() {
     Route::apiResource('/video', VideoController::class);
     Route::apiResource('/comment', CommentController::class);
     Route::apiResource('/history', HistoryController::class);
+    Route::apiResource('/like', LikeController::class);
 
     Route::prefix('/profile')->group(function() {
         Route::post('/edit-profile-image', [ProfileController::class, 'editProfileImage']);
