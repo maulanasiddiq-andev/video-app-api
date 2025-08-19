@@ -42,7 +42,7 @@ class CommentController extends Controller
 
         $comment = Comment::create($validated);
 
-        $base_response = new BaseResponse(true, ['Komentar berhasil ditambahkan'], $comment->load('user'));
+        $base_response = new BaseResponse(true, ['Komentar berhasil ditambahkan'], new CommentResource($comment->load('user')));
 
         return response()->json($base_response->toArray());
     }
