@@ -83,10 +83,12 @@ class VideoController extends Controller
                     'history' => fn($query) => $query->orderBy('created_at', 'desc')
                                                 ->where('user_id', $userId)
                                                 ->where('record_status', RecordStatusConstant::active),
-                    'comment.user' => fn($query) => $query->orderBy('created_at', 'desc')
+                    'comment' => fn($query) => $query->orderBy('created_at', 'desc')
                                                 ->where('record_status', RecordStatusConstant::active),
                 ])
             ->loadCount(['comments', 'histories']);
+
+        $video->comment->load('user');
 
         $resource = $existing_video->toResource();
         $base_response = new BaseResponse(true, [], $resource);
