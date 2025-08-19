@@ -76,7 +76,7 @@ class CommentController extends Controller
         $validated = $request->validated();
         $comment->update($validated);
 
-        $base_response = new BaseResponse(true, ['Komentar berhasil diupdate'], $comment->load('user'));
+        $base_response = new BaseResponse(true, ['Komentar berhasil diupdate'], new CommentResource($comment->load('user')));
 
         return response()->json($base_response->toArray());
     }
