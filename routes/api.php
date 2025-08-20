@@ -23,7 +23,7 @@ Route::middleware('auth:sanctum')->group(function() {
     Route::apiResource('/video', VideoController::class);
     Route::prefix('/video')->group(function() {
         Route::get('/{video}/comments', [VideoController::class, 'getComments']);
-        Route::get('/{video}/latest-comment', [VideoController::class, 'getLastComment']);
+        Route::get('/{video}/latest-comment', [VideoController::class, 'getLatestComment']);
         Route::post('/{video}/like', [VideoController::class, 'likeVideo']);
     });
     Route::apiResource('/comment', CommentController::class);
