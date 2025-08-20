@@ -21,6 +21,11 @@ Route::post('/resend-otp', [AuthController::class, 'resendOtp']);
 
 Route::middleware('auth:sanctum')->group(function() {
     Route::apiResource('/video', VideoController::class);
+    Route::prefix('/video')->group(function() {
+        Route::get('/{video}/comments', [VideoController::class, 'getComments']);
+        Route::get('/{video}/last-comment', [VideoController::class, 'getLastComment']);
+        Route::post('/{video}/like', [VideoController::class, 'likeVideo']);
+    });
     Route::apiResource('/comment', CommentController::class);
     Route::apiResource('/history', HistoryController::class);
     Route::apiResource('/like', LikeController::class);

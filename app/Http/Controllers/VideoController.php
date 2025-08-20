@@ -3,12 +3,15 @@
 namespace App\Http\Controllers;
 
 use App\Enums\RecordStatusConstant;
+use App\Http\Requests\StoreLikeRequest;
 use App\Models\Video;
 use App\Http\Requests\StoreVideoRequest;
 use App\Http\Requests\UpdateVideoRequest;
 use App\Http\Resources\BaseResponse;
+use App\Http\Resources\CommentResource;
 use App\Http\Resources\SearchResponse;
 use App\Http\Resources\VideoResource;
+use App\Models\Comment;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
@@ -83,12 +86,8 @@ class VideoController extends Controller
                     'history' => fn($query) => $query->orderBy('created_at', 'desc')
                                                 ->where('user_id', $userId)
                                                 ->where('record_status', RecordStatusConstant::active),
-                    'comment' => fn($query) => $query->orderBy('created_at', 'desc')
-                                                ->where('record_status', RecordStatusConstant::active),
                 ])
             ->loadCount(['comments', 'histories']);
-
-        $video->comment->load('user');
 
         $resource = $existing_video->toResource();
         $base_response = new BaseResponse(true, [], $resource);
@@ -142,5 +141,58 @@ class VideoController extends Controller
         $base_response = new BaseResponse(true, ['Video berhasil dihapus'], null);
 
         return response()->json($base_response->toArray());
+    }
+
+    public function getComments(Video $video, Request $request)
+    {
+        if ($video->record_status == RecordStatusConstant::deleted) {
+            throw new NotFoundHttpException();
+        }
+
+        $page_size = $request->input('pageSize', 10);
+
+        $comments = Comment::record($request)
+                            ->filter($request)
+                            ->where('video_id', $video->id)
+                            ->with('user')
+                            ->paginate($page_size);
+        $collection = CommentResource::collection($comments)->response()->getData(true);
+        $search_response = new SearchResponse($collection);
+        $base_response = new BaseResponse(true, [], $search_response->toArray());
+
+        return response()->json($base_response->toArray());
+    }
+
+    public function getLastComment(Video $video, Request $request)
+    {
+        if ($video->record_status == RecordStatusConstant::deleted) {
+            throw new NotFoundHttpException();
+        }
+
+        $comment = Comment::record($request)
+                            ->where('video_id', $video->id)
+                            ->with('user')
+                            ->latest()->first();
+        $resource = new CommentResource($comment);
+        $base_response = new BaseResponse(true, [], $resource);
+        return response()->json($base_response->toArray());
+    }
+
+    public function likeVideo(Video $video)
+    {
+        $user = Auth::guard();
+
+        if ($video->likes()->where('user_id', $user->id())->where('record_status', RecordStatusConstant::active)->exists()) {
+            $video->likes()->update(['record_status' => RecordStatusConstant::deleted]);   
+        } else {
+            $like = [
+                'record_status' => RecordStatusConstant::active,
+                'user_id' => $user->id()
+            ];
+            
+            $video->likes()->create($like);
+        }
+
+        return $video->load('likes.user');
     }
 }
