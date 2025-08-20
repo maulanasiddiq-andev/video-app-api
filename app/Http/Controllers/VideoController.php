@@ -163,7 +163,7 @@ class VideoController extends Controller
         return response()->json($base_response->toArray());
     }
 
-    public function getLastComment(Video $video, Request $request)
+    public function getLatestComment(Video $video, Request $request)
     {
         if ($video->record_status == RecordStatusConstant::deleted) {
             throw new NotFoundHttpException();
