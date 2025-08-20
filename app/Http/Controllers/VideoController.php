@@ -71,7 +71,7 @@ class VideoController extends Controller
     public function show(Video $video)
     {
         if ($video->record_status == RecordStatusConstant::deleted) {
-            throw NotFoundHttpException::class;
+            throw new NotFoundHttpException();
         }
 
         $guard = Auth::guard(); 
@@ -102,7 +102,7 @@ class VideoController extends Controller
     public function update(UpdateVideoRequest $request, Video $video)
     {
         if ($video->record_status == RecordStatusConstant::deleted) {
-            throw NotFoundHttpException::class;
+            throw new NotFoundHttpException();
         }
 
         $validated = $request->validated();
@@ -135,7 +135,7 @@ class VideoController extends Controller
         // normally delete data
         // $video->delete();
         if ($video->record_status == RecordStatusConstant::deleted) {
-            throw NotFoundHttpException::class;
+            throw new NotFoundHttpException();
         }
 
         $video->update(['record_status' => RecordStatusConstant::deleted]);

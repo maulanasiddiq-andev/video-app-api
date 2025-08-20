@@ -53,7 +53,7 @@ class CommentController extends Controller
     public function show(Comment $comment)
     {
         if ($comment->record_status == RecordStatusConstant::deleted) {
-            throw NotFoundHttpException::class;
+            throw new NotFoundHttpException();
         }  
 
         $existing_comment = $comment->load('user');
@@ -70,7 +70,7 @@ class CommentController extends Controller
     public function update(UpdateCommentRequest $request, Comment $comment)
     {
         if ($comment->record_status == RecordStatusConstant::deleted) {
-            throw NotFoundHttpException::class;
+            throw new NotFoundHttpException();
         }  
 
         $validated = $request->validated();
@@ -87,7 +87,7 @@ class CommentController extends Controller
     public function destroy(Comment $comment)
     {
         if ($comment->record_status == RecordStatusConstant::deleted) {
-            throw NotFoundHttpException::class;
+            throw new NotFoundHttpException();
         }  
 
         $comment->update(['record_status' => RecordStatusConstant::deleted]);

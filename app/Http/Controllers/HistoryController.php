@@ -63,7 +63,7 @@ class HistoryController extends Controller
     public function show(History $history)
     {
         if ($history->record_status == RecordStatusConstant::deleted) {
-            throw NotFoundHttpException::class;
+            throw new NotFoundHttpException();
         }  
 
         $existing_history = $history->load(['user', 'video.user']);
@@ -88,7 +88,7 @@ class HistoryController extends Controller
     public function update(UpdateHistoryRequest $request, History $history)
     {
         if ($history->record_status == RecordStatusConstant::deleted) {
-            throw NotFoundHttpException::class;
+            throw new NotFoundHttpException();
         }  
 
         $validated = $request->validated();
@@ -105,7 +105,7 @@ class HistoryController extends Controller
     public function destroy(History $history)
     {
         if ($history->record_status == RecordStatusConstant::deleted) {
-            throw NotFoundHttpException::class;
+            throw new NotFoundHttpException();
         }
 
         $history->record_status = RecordStatusConstant::deleted;
