@@ -27,6 +27,7 @@ class VideoResource extends JsonResource
             'updatedAt' => $this->updated_at,
             'commentsCount' => $this->comments_count,
             'historiesCount' => $this->histories_count,
+            'likesCount' => $this->likes_count,
             'user' => new UserResource($this->whenLoaded('user')),
             'comment' => new CommentResource($this->whenLoaded('comment')),
             'history' => new HistoryResource($this->whenLoaded('history'))
