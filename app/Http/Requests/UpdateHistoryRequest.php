@@ -11,7 +11,9 @@ class UpdateHistoryRequest extends FormRequest
      */
     public function authorize(): bool
     {
-        return true;
+        $history = $this->route('history');
+
+        return $history && $this->user()->id == $history->user_id;
     }
 
     /**

@@ -11,7 +11,9 @@ class UpdateLikeRequest extends FormRequest
      */
     public function authorize(): bool
     {
-        return false;
+        $like = $this->route('like');
+
+        return $like && $this->user()->id == $like->user_id;
     }
 
     /**
