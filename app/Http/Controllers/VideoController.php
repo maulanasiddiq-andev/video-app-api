@@ -180,6 +180,10 @@ class VideoController extends Controller
 
     public function likeVideo(Video $video)
     {
+        if ($video->record_status == RecordStatusConstant::deleted) {
+            throw new NotFoundHttpException();
+        }
+
         $user = Auth::guard();
 
         if ($video->likes()->where('user_id', $user->id())->where('record_status', RecordStatusConstant::active)->exists()) {
@@ -194,5 +198,26 @@ class VideoController extends Controller
         }
 
         return $video->load('likes.user');
+    }
+
+    public function getSuggestedVideos(Video $video, Request $request)
+    {
+        if ($video->record_status == RecordStatusConstant::deleted) {
+            throw new NotFoundHttpException();
+        }
+
+        $page_size = $request->input('pageSize', 10);
+
+        $videos = Video::where('id', '!=', $video->id)
+                        ->with('user')
+                        ->withCount('histories')
+                        ->record($request)
+                        ->paginate($page_size);
+
+        $collection = VideoResource::collection($videos)->response()->getData(true);
+        $search_response = new SearchResponse($collection);
+        $base_response = new BaseResponse(true, [], $search_response->toArray());
+
+        return response()->json($base_response->toArray());
     }
 }

@@ -25,6 +25,7 @@ Route::middleware('auth:sanctum')->group(function() {
         Route::get('/{video}/comments', [VideoController::class, 'getComments']);
         Route::get('/{video}/latest-comment', [VideoController::class, 'getLatestComment']);
         Route::post('/{video}/like', [VideoController::class, 'likeVideo']);
+        Route::get('/{video}/suggested-videos', [VideoController::class, 'getSuggestedVideos']);
     });
     Route::apiResource('/comment', CommentController::class);
     Route::apiResource('/history', HistoryController::class);
